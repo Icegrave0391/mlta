@@ -31,7 +31,7 @@ string getFileName(DILocation *Loc, DISubprogram *SP) {
 
 	int slashToTrim = 2;
 	char *user = getlogin();
-	if (strstr(user, "kjlu")) {
+	if (strstr(user, "rui")) {
 		slashToTrim = 0;
 		trimPathSlash(FN, slashToTrim);
 		FN = string(SOURCE_CODE_PATH) + "/" + FN;
