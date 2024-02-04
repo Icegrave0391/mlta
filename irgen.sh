@@ -1,9 +1,18 @@
 # Configurations
 
-KERNEL_SRC="$(pwd)/../kernels/linux"
+KERNEL_SRC="$(pwd)/../../kernels/linux-6.7"
 IRDUMPER="$(pwd)/IRDumper/build/lib/libDumper.so"
-CLANG="$(pwd)/llvm-project/prefix/bin/clang"
-CONFIG="defconfig"
+CC="$(pwd)/llvm-project/prefix/bin/clang"
+LD="$(pwd)/llvm-project/prefix/bin/ld.lld"
+AR="$(pwd)/llvm-project/prefix/bin/llvm-ar"
+AS="$(pwd)/llvm-project/prefix/bin/llvm-as"
+NM="$(pwd)/llvm-project/prefix/bin/llvm-nm"
+STRIP="$(pwd)/llvm-project/prefix/bin/llvm-strip"
+OBJCOPY="$(pwd)/llvm-project/prefix/bin/llvm-objcopy"
+OBJDUMP="$(pwd)/llvm-project/prefix/bin/llvm-objdump"
+READELF="$(pwd)/llvm-project/prefix/bin/llvm-readelf"
+# CONFIG="defconfig"
+CONFIG="olddefconfig"
 #CONFIG="allyesconfig"
 
 # Use -Wno-error to avoid turning warnings into errors
@@ -22,8 +31,8 @@ fi
 echo -e $NEW_CMD >$KERNEL_SRC/IRDumper.cmd
 cat $KERNEL_SRC/Makefile.bak $KERNEL_SRC/IRDumper.cmd >$KERNEL_SRC/Makefile
 
-cd $KERNEL_SRC && make $CONFIG
+cd $KERNEL_SRC && make CC=$CC LD=$LD AR=$AR AS=$AS NM=$NM STRIP=$STRIP OBJCOPY=$OBJCOPY OBJDUMP=$OBJDUMP READELF=$READELF $CONFIG
 echo $CLANG
 echo $NEW_CMD
-make CC=$CLANG -j`nproc` -k -i
+make CC=$CC LD=$LD AR=$AR AS=$AS NM=$NM STRIP=$STRIP OBJCOPY=$OBJCOPY OBJDUMP=$OBJDUMP READELF=$READELF -j`nproc` -k -i
 
