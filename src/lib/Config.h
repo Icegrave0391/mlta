@@ -21,7 +21,7 @@ using namespace llvm;
 //#define DEBUG_MLTA
 
 extern int ENABLE_MLTA;
-#define SOUND_MODE 1
+// #define SOUND_MODE 1
 #define MAX_TYPE_LAYER 10
 
 #define MAP_CALLER_TO_CALLEE 1
@@ -29,7 +29,7 @@ extern int ENABLE_MLTA;
 #define MAP_DECLARATION_FUNCTION
 #define PRINT_ICALL_TARGET
 // Path to source code
-#define SOURCE_CODE_PATH "/home/kjlu/projects/kernels/linux-5.1"
+#define SOURCE_CODE_PATH "/home/rui/kernels/linux-6.2"
 //#define PRINT_SOURCE_LINE
 //#define MLTA_FIELD_INSENSITIVE
 
