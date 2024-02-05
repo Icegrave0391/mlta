@@ -160,12 +160,15 @@ void getBBMapping(GlobalContext *GCtx) {
 						DILocation* Loc = cast<DILocation>(N);
 						info.lines.insert(Loc->getLine());
 						if (info.path == "") {
-							// remove the leading "./" in the path
 							std::string path = Loc->getFilename().str();
-							if (path[0] == '.' && path[1] == '/') {
-								path = path.substr(2);
-							}
+							// remove any "./" substr in the path
+							OP << "dbg path before: " << path << "\n";
+							path = cleanPath(path);
+							OP << "dbg path after: " << path << "\n";
 							info.path = Loc->getDirectory().str() + "/" + path;
+							
+							OP << "dbg directory: " << Loc->getDirectory().str() << "\n";
+							OP << "result path: " << info.path << "\n\n";
 						}
 					}
 				}
@@ -177,74 +180,74 @@ void getBBMapping(GlobalContext *GCtx) {
 	OP << "Basic Block Mapping set up complete.\n";
 	#endif
 
-	// 2. set up the successors for each basic block
-	#if DEBUG_MAPPING
-	OP << "\n\n############## Basic Block Successors ##############\n";
-	#endif
-	for(auto &M : GCtx->Modules) {
-		Module *module = M.first;
-		for (Function& func : *module) {
-			#if DEBUG_MAPPING
-			OP << "\n\nFunction: " << func.getName() << "\n";
-			#endif
-			if (func.getBasicBlockList().size() == 0) {
-				#if DEBUG_MAPPING
-				OP << "No basic block in function " << func.getName() << "\n";
-				#endif
-				continue;
-			}
+	// // 2. set up the successors for each basic block
+	// #if DEBUG_MAPPING
+	// OP << "\n\n############## Basic Block Successors ##############\n";
+	// #endif
+	// for(auto &M : GCtx->Modules) {
+	// 	Module *module = M.first;
+	// 	for (Function& func : *module) {
+	// 		#if DEBUG_MAPPING
+	// 		OP << "\n\nFunction: " << func.getName() << "\n";
+	// 		#endif
+	// 		if (func.getBasicBlockList().size() == 0) {
+	// 			#if DEBUG_MAPPING
+	// 			OP << "No basic block in function " << func.getName() << "\n";
+	// 			#endif
+	// 			continue;
+	// 		}
 
-			for (BasicBlock& bb : func) {
-				BBInfo& info = BBMapping[func.getName().str() + "&" + bb.getName().str()];
-				// 2.1 intra-function basic block successors
-				for (BasicBlock* succ : successors(&bb)) {
-					info.successors.insert(func.getName().str() + "&" + succ->getName().str());
-				}
-				#if DEBUG_MAPPING
-				OP << "intra-function basic block successors set up complete.\n";
-				#endif
-				// 2.2 inter-function basic block successors
-				for (Instruction& inst : bb) {
-					if (CallInst *callInst = dyn_cast<CallInst>(&inst)) {
-						if (GCtx->Callees.find(callInst) != GCtx->Callees.end()) {
-							#if DEBUG_INDIRECT_MAPPING
-							// check if the current call instruction is an indirect call
-							if (callInst->isIndirectCall()) {
-								OP << "Indirect Call: " << *callInst << "\n";
-							}
-							#endif
-							for (Function* callee : GCtx->Callees[callInst]) {
-								// check if the callee has an entry block
-								if (callee->getBasicBlockList().size() == 0) {
-									continue;
-								}
+	// 		for (BasicBlock& bb : func) {
+	// 			BBInfo& info = BBMapping[func.getName().str() + "&" + bb.getName().str()];
+	// 			// 2.1 intra-function basic block successors
+	// 			for (BasicBlock* succ : successors(&bb)) {
+	// 				info.successors.insert(func.getName().str() + "&" + succ->getName().str());
+	// 			}
+	// 			#if DEBUG_MAPPING
+	// 			OP << "intra-function basic block successors set up complete.\n";
+	// 			#endif
+	// 			// 2.2 inter-function basic block successors
+	// 			for (Instruction& inst : bb) {
+	// 				if (CallInst *callInst = dyn_cast<CallInst>(&inst)) {
+	// 					if (GCtx->Callees.find(callInst) != GCtx->Callees.end()) {
+	// 						#if DEBUG_INDIRECT_MAPPING
+	// 						// check if the current call instruction is an indirect call
+	// 						if (callInst->isIndirectCall()) {
+	// 							OP << "Indirect Call: " << *callInst << "\n";
+	// 						}
+	// 						#endif
+	// 						for (Function* callee : GCtx->Callees[callInst]) {
+	// 							// check if the callee has an entry block
+	// 							if (callee->getBasicBlockList().size() == 0) {
+	// 								continue;
+	// 							}
 
-								BasicBlock& entry = callee->getEntryBlock();
-								info.successors.insert(callee->getName().str() + "&" + entry.getName().str());
+	// 							BasicBlock& entry = callee->getEntryBlock();
+	// 							info.successors.insert(callee->getName().str() + "&" + entry.getName().str());
 
-								#if DEBUG_INDIRECT_MAPPING
-								OP << "\t" << callee->getName().str() + "&" + entry.getName().str() << "\n";
-								#endif
-							}
-						}
-					}
-				}
-				#if DEBUG_MAPPING
-				OP << "inter-function basic block successors set up complete.\n";
-				#endif
-			}
-		}
-	}
-	#if DEBUG_MAPPING
-	OP << "Basic Block Successors set up complete.\n";
-	#endif
-	// 3. save the mapping as a JSON file
-	#if DEBUG_MAPPING
-	OP << "\n\n############## Save Mapping as a JSON file ##############\n";
-	#endif
-	std::ofstream outFile("BBMapping.json");
-	writeMappingToJson(outFile, BBMapping);
-	OP << "Basic Block Mapping saved as BBMapping.json.\n";
+	// 							#if DEBUG_INDIRECT_MAPPING
+	// 							OP << "\t" << callee->getName().str() + "&" + entry.getName().str() << "\n";
+	// 							#endif
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 			#if DEBUG_MAPPING
+	// 			OP << "inter-function basic block successors set up complete.\n";
+	// 			#endif
+	// 		}
+	// 	}
+	// }
+	// #if DEBUG_MAPPING
+	// OP << "Basic Block Successors set up complete.\n";
+	// #endif
+	// // 3. save the mapping as a JSON file
+	// #if DEBUG_MAPPING
+	// OP << "\n\n############## Save Mapping as a JSON file ##############\n";
+	// #endif
+	// std::ofstream outFile("BBMapping.json");
+	// writeMappingToJson(outFile, BBMapping);
+	// OP << "Basic Block Mapping saved as BBMapping.json.\n";
 }
 
 int main(int argc, char **argv) {

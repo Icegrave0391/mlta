@@ -563,3 +563,13 @@ void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping
 	}
 	outFile << "]\n";
 }
+
+std::string cleanPath(const std::string& str) {
+    std::string result = str;
+    size_t found = result.find("./");
+    while (found != std::string::npos) {
+        result.erase(found, 2); // Erase 2 characters starting from 'found'
+        found = result.find("./", found); // Search for the next occurrence starting from 'found'
+    }
+    return result;
+}

@@ -116,6 +116,7 @@ void LoadElementsStructNameMap(
 		vector<pair<Module*, StringRef>> &Modules);
 
 void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping);
+string cleanPath(const string &path);
 //
 // Common data structures
 //
