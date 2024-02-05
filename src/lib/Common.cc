@@ -564,12 +564,40 @@ void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping
 	outFile << "]\n";
 }
 
-std::string cleanPath(const std::string& str) {
-    std::string result = str;
-    size_t found = result.find("./");
-    while (found != std::string::npos) {
-        result.erase(found, 2); // Erase 2 characters starting from 'found'
-        found = result.find("./", found); // Search for the next occurrence starting from 'found'
+std::string cleanPath(const std::string& path) {
+    std::stringstream ss(path);
+    std::string token;
+    std::vector<std::string> tokens;
+
+    // Split the path string by '/'
+    while (std::getline(ss, token, '/')) {
+        if (token == "." || token.empty()) {
+            // Ignore current directory "." and empty tokens
+            continue;
+        } else if (token == "..") {
+            // If encountering a "..", remove the last directory
+            if (!tokens.empty()) {
+                tokens.pop_back();
+            }
+        } else {
+            // Add valid directory names to tokens
+            tokens.push_back(token);
+        }
     }
-    return result;
+
+    // Reconstruct the cleaned path
+    std::string cleanedPath;
+	for (auto it = tokens.begin(); it != tokens.end(); ++it) {
+		if (it == tokens.begin())
+			cleanedPath += *it;
+		else
+			cleanedPath += "/" + *it;
+	}
+
+    // Check if the original path was absolute
+    if (!path.empty() && path[0] == '/') {
+        return cleanedPath.empty() ? "/" : cleanedPath;
+    } else {
+        return cleanedPath;
+    }
 }
