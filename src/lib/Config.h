@@ -33,5 +33,6 @@ extern int ENABLE_MLTA;
 //#define PRINT_SOURCE_LINE
 //#define MLTA_FIELD_INSENSITIVE
 
-
+#define DEBUG_MAPPING 0
+#define DEBUG_INDIRECT_MAPPING 0
 #endif
