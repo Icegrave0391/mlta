@@ -130,6 +130,80 @@ void PrintResults(GlobalContext *GCtx) {
 
 }
 
+std::unordered_map<std::string, BBInfo> BBMapping;
+
+void getBBMapping(GlobalContext *GCtx) {
+	// 1. set up the mapping for each basic block, leave the successors blank for now
+	OP << "\n\n############## Basic Block Mapping ##############\n";
+	for(auto &M : GCtx->Modules) {
+		Module *module = M.first;
+
+		for (Function& func : *module) {
+			OP << "\n\nFunction: " << func.getName() << "\n";
+			if (func.getBasicBlockList().size() == 0) {
+				OP << "No basic block in function " << func.getName() << "\n";
+				continue;
+			}
+
+			// traverse each basic block
+			for (BasicBlock& bb : func) {
+				BBInfo info;
+				info.name = func.getName().str() + "&" + bb.getName().str();
+				info.path = "";
+				for (Instruction& inst : bb) {
+					MDNode *N = inst.getMetadata("dbg");
+					if (N) {
+						DILocation* Loc = cast<DILocation>(N);
+						info.lines.insert(Loc->getLine());
+						if (info.path == "") {
+							info.path = Loc->getDirectory().str() + "/" + Loc->getFilename().str();
+						}
+					}
+				}
+				BBMapping[info.name] = info;
+			}
+		}
+	}
+	OP << "Basic Block Mapping set up complete.\n";
+
+	// 2. set up the successors for each basic block
+	OP << "\n\n############## Basic Block Successors ##############\n";
+	for(auto &M : GCtx->Modules) {
+		Module *module = M.first;
+		for (Function& func : *module) {
+			for (BasicBlock& bb : func) {
+				BBInfo& info = BBMapping[func.getName().str() + "&" + bb.getName().str()];
+				// 2.1 intra-function basic block successors
+				for (BasicBlock* succ : successors(&bb)) {
+					info.successors.insert(func.getName().str() + "&" + succ->getName().str());
+				}
+
+				// 2.2 inter-function basic block successors
+				for (Instruction& inst : bb) {
+					if (CallInst *callInst = dyn_cast<CallInst>(&inst)) {
+						if (GCtx->Callees.find(callInst) != GCtx->Callees.end()) {
+							for (Function* callee : GCtx->Callees[callInst]) {
+								BasicBlock& entry = callee->getEntryBlock();
+								// check the entry block exists, if so, push the entry block as the successor
+								if (entry.getTerminator() != nullptr) {
+									info.successors.insert(callee->getName().str() + "&" + entry.getName().str());
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	OP << "Basic Block Successors set up complete.\n";
+
+	// 3. save the mapping as a JSON file
+	OP << "\n\n############## Save Mapping as a JSON file ##############\n";
+	std::ofstream outFile("BBMapping.json");
+	writeMappingToJson(outFile, BBMapping);
+	OP << "Basic Block Mapping saved as BBMapping.json.\n";
+}
+
 int main(int argc, char **argv) {
 
 	// Print a stack trace if we signal out.
@@ -173,6 +247,8 @@ int main(int argc, char **argv) {
 
 	// Print final results
 	PrintResults(&GlobalCtx);
+
+	getBBMapping(&GlobalCtx);
 
 	return 0;
 }

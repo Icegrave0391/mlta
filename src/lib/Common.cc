@@ -7,7 +7,6 @@
 #include "Common.h"
 #include "Config.h"
 
-
 // Map from struct elements to its name
 static map<string, set<StringRef>>elementsStructNameMap;
 
@@ -536,3 +535,31 @@ int64_t getGEPOffset(const Value *V, const DataLayout *DL) {
 	return offset;
 }
 
+
+void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping) {
+	outFile << "[\n";
+	for (auto it = mapping.begin(); it != mapping.end(); ++it) {
+		outFile << "{\n";
+		outFile << "\"name\": \"" << it->first << "\",\n";
+		outFile << "\"path\": \"" << it->second.path << "\",\n";
+		outFile << "\"lines\": [";
+		for (auto line = it->second.lines.begin(); line != it->second.lines.end(); ++line) {
+			outFile << *line;
+			if (next(line) != it->second.lines.end())
+				outFile << ", ";
+		}
+		outFile << "],\n";
+		outFile << "\"successors\": [";
+		for (auto succ = it->second.successors.begin(); succ != it->second.successors.end(); ++succ) {
+			outFile << "\"" << *succ << "\"";
+			if (next(succ) != it->second.successors.end())
+				outFile << ", ";
+		}
+		outFile << "]\n";
+		outFile << "}";
+		if (next(it) != mapping.end())
+			outFile << ",";
+		outFile << "\n";
+	}
+	outFile << "]\n";
+}

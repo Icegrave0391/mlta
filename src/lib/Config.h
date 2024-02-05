@@ -21,7 +21,7 @@ using namespace llvm;
 //#define DEBUG_MLTA
 
 extern int ENABLE_MLTA;
-// #define SOUND_MODE 1
+#define SOUND_MODE 1
 #define MAX_TYPE_LAYER 10
 
 #define MAP_CALLER_TO_CALLEE 1

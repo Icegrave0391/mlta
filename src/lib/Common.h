@@ -11,7 +11,11 @@
 #include <unistd.h>
 #include <bitset>
 #include <chrono>
-
+#include <iostream>
+#include <fstream>
+#include <unordered_map>
+#include <set>
+#include <vector>
 
 #define Z3_ENABLED 0
 
@@ -59,6 +63,13 @@ using namespace std;
 #define KCYN  "\x1B[36m"  /* Cyan */
 #define KWHT  "\x1B[37m"  /* White */
 
+struct BBInfo {
+	std::string name;
+	std::string path;
+	std::set<int> lines;
+	std::set<std::string> successors;
+};
+
 
 extern cl::opt<unsigned> VerboseLevel;
 
@@ -104,6 +115,7 @@ int64_t getGEPOffset(const Value *V, const DataLayout *DL);
 void LoadElementsStructNameMap(
 		vector<pair<Module*, StringRef>> &Modules);
 
+void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping);
 //
 // Common data structures
 //
