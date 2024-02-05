@@ -4,3 +4,4 @@ processLinuxTrace.py
 tags
 llvm-project
 *.swp
+**/*.json
