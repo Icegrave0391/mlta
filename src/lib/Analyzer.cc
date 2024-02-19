@@ -158,7 +158,8 @@ void getBBMapping(GlobalContext *GCtx) {
 					MDNode *N = inst.getMetadata("dbg");
 					if (N) {
 						DILocation* Loc = cast<DILocation>(N);
-						info.lines.insert(Loc->getLine());
+						if (Loc->getLine() != 0)
+							info.lines.insert(Loc->getLine());
 						if (info.path == "") {
 							std::string path = Loc->getFilename().str();
 							// remove any "./" substr in the path
@@ -245,9 +246,11 @@ void getBBMapping(GlobalContext *GCtx) {
 	#if DEBUG_MAPPING
 	OP << "\n\n############## Save Mapping as a JSON file ##############\n";
 	#endif
-	std::ofstream outFile("BBMapping.json");
+	string filename = "BBMapping_later.json";
+	// std::ofstream outFile("BBMapping.json");
+	std::ofstream outFile(filename);
 	writeMappingToJson(outFile, BBMapping);
-	OP << "Basic Block Mapping saved as BBMapping.json.\n";
+	OP << "Basic Block Mapping saved as " << filename << "\n";
 }
 
 int main(int argc, char **argv) {
