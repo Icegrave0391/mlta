@@ -564,6 +564,34 @@ void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping
 	outFile << "]\n";
 }
 
+void writeICToJson(ostream& outFile, unordered_map<string, ICInfo> &mapping) {
+	outFile << "[\n";
+	for (auto it = mapping.begin(); it != mapping.end(); ++it) {
+		outFile << "{\n";
+		outFile << "\"name\": \"" << it->first << "\",\n";
+		outFile << "\"path\": \"" << it->second.path << "\",\n";
+		outFile << "\"lines\": [";
+		for (auto line = it->second.lines.begin(); line != it->second.lines.end(); ++line) {
+			outFile << *line;
+			if (next(line) != it->second.lines.end())
+				outFile << ", ";
+		}
+		outFile << "],\n";
+		outFile << "\"callees\": [";
+		for (auto succ = it->second.callees.begin(); succ != it->second.callees.end(); ++succ) {
+			outFile << "\"" << *succ << "\"";
+			if (next(succ) != it->second.callees.end())
+				outFile << ", ";
+		}
+		outFile << "]\n";
+		outFile << "}";
+		if (next(it) != mapping.end())
+			outFile << ",";
+		outFile << "\n";
+	}
+	outFile << "]\n";
+}
+
 std::string cleanPath(const std::string& path) {
     std::stringstream ss(path);
     std::string token;
