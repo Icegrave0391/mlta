@@ -131,10 +131,9 @@ void PrintResults(GlobalContext *GCtx) {
 }
 
 void getIndirectCall(GlobalContext *GCtx) {
-	std::unordered_map<std::string, ICInfo> ICs;
+	std::vector<ICInfo> ICs;
 	for (auto& IC : GCtx->IndirectCallInsts) {
 		ICInfo info;
-		info.name = IC->getName().str();
 		info.BBName = IC->getParent()->getParent()->getName().str() + "&" + IC->getParent()->getName().str();
 
 
@@ -157,11 +156,13 @@ void getIndirectCall(GlobalContext *GCtx) {
 		for (Function* callee : GCtx->Callees[IC]) {
 			info.callees.insert(callee->getName().str());
 		}
-		ICs[info.name] = info;
+		ICs.push_back(info);
 	}
 	
 	if (ICs.size() != GCtx->IndirectCallInsts.size()) {
 		OP << "Warning: the number of indirect call instructions and the number of indirect call info do not match.\n";
+		OP << "Indirect Call Instructions: " << GCtx->IndirectCallInsts.size() << "\n";
+		OP << "Indirect Call Info: " << ICs.size() << "\n";
 	}
 
 	// save the mapping as a JSON file
@@ -170,35 +171,6 @@ void getIndirectCall(GlobalContext *GCtx) {
 	writeICToJson(outFile, ICs);
 	OP << "Indirect Call Info saved as " << filename << "\n";
 }
-
-
-// void getIndirectCall(GlobalContext *GCtx) {
-// 	std::unordered_map<std::string, ICInfo> ICs;
-
-// 	for (auto &M : GCtx->Modules) {
-// 		Module *module = M.first;
-		
-// 		for (Function& func : *module) {
-// 			if (func.getBasicBlockList().size() == 0) {
-// 				continue;
-// 			}
-
-// 			for (BasicBlock& bb : func) {
-// 				for (Instruction& inst : bb) {
-// 					OP << "Instruction: " << inst << "\n";
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	// // save the mapping as a JSON file
-// 	// string filename = "ICInfo.json";
-// 	// std::ofstream outFile(filename);
-// 	// writeICToJson(outFile, ICs);
-// 	// OP << "Indirect Call Info saved as " << filename << "\n";
-
-// }
-
 
 std::unordered_map<std::string, BBInfo> BBMapping;
 
@@ -364,8 +336,8 @@ int main(int argc, char **argv) {
 	CallGraphPass CGPass(&GlobalCtx);
 	CGPass.run(GlobalCtx.Modules);
 
-	// // Print final results
-	// PrintResults(&GlobalCtx);
+	// Print final results
+	PrintResults(&GlobalCtx);
 
 	// getBBMapping(&GlobalCtx);
 

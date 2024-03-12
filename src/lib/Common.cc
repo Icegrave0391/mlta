@@ -564,23 +564,23 @@ void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping
 	outFile << "]\n";
 }
 
-void writeICToJson(ostream& outFile, unordered_map<string, ICInfo> &mapping) {
+void writeICToJson(ostream& outFile, vector<ICInfo> &mapping) {
 	outFile << "[\n";
 	for (auto it = mapping.begin(); it != mapping.end(); ++it) {
 		outFile << "{\n";
-		outFile << "\"name\": \"" << it->first << "\",\n";
-		outFile << "\"path\": \"" << it->second.path << "\",\n";
+		outFile << "\"BBName\": \"" << it->BBName << "\",\n";
+		outFile << "\"path\": \"" << it->path << "\",\n";
 		outFile << "\"lines\": [";
-		for (auto line = it->second.lines.begin(); line != it->second.lines.end(); ++line) {
+		for (auto line = it->lines.begin(); line != it->lines.end(); ++line) {
 			outFile << *line;
-			if (next(line) != it->second.lines.end())
+			if (next(line) != it->lines.end())
 				outFile << ", ";
 		}
 		outFile << "],\n";
 		outFile << "\"callees\": [";
-		for (auto succ = it->second.callees.begin(); succ != it->second.callees.end(); ++succ) {
+		for (auto succ = it->callees.begin(); succ != it->callees.end(); ++succ) {
 			outFile << "\"" << *succ << "\"";
-			if (next(succ) != it->second.callees.end())
+			if (next(succ) != it->callees.end())
 				outFile << ", ";
 		}
 		outFile << "]\n";
