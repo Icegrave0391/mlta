@@ -98,6 +98,47 @@ void IterativeModulePass::run(ModuleList &modules) {
 	OP << "[" << ID << "] Done!\n\n";
 }
 
+
+#include <fstream>
+#include "llvm/IR/Instructions.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/FileSystem.h"
+
+// 假设 GCtx 是你的 GlobalContext*，并且已经填充好了 Callees
+
+void dumpCallgraphToFile(GlobalContext *GCtx) {
+    // 打开文件
+    std::error_code EC;
+    llvm::raw_fd_ostream Out("callgraph.txt", EC,
+                             llvm::sys::fs::OF_Text | llvm::sys::fs::OF_Append);
+    if (EC) {
+        llvm::errs() << "无法打开输出文件: " << EC.message() << "\n";
+        return;
+    }
+
+    // 遍历每个调用点
+    for (auto &entry : GCtx->Callees) {
+        llvm::CallInst *CI = entry.first;
+        llvm::Function *CallerF = CI->getFunction();
+        const auto &CalleeSet = entry.second;
+
+        for (auto *CalleeF : CalleeSet) {
+
+			if (CalleeF->isIntrinsic())
+            	continue;
+
+            Out << CallerF->getName()    // caller 名称
+                << " -> "
+                << CalleeF->getName()    // callee 名称
+                << "\n";
+        }
+    }
+
+    Out.close();
+    llvm::outs() << "Callgraph 已写入 callgraph.txt\n";
+}
+
+
 void PrintResults(GlobalContext *GCtx) {
 
 	int TotalTargets = 0;
@@ -128,13 +169,14 @@ void PrintResults(GlobalContext *GCtx) {
 	OP<<"# Number of one-layer calls: \t\t\t"<<GCtx->NumFirstLayerTypeCalls<<"\n";
 	OP<<"# Number of one-layer targets: \t\t\t"<<GCtx->NumFirstLayerTargets<<"\n";
 
+
+	dumpCallgraphToFile(GCtx);
 }
 
 void getIndirectCall(GlobalContext *GCtx) {
-	std::unordered_map<std::string, ICInfo> ICs;
+	std::vector<ICInfo> ICs;
 	for (auto& IC : GCtx->IndirectCallInsts) {
 		ICInfo info;
-		info.name = IC->getName().str();
 		info.BBName = IC->getParent()->getParent()->getName().str() + "&" + IC->getParent()->getName().str();
 
 
@@ -157,11 +199,13 @@ void getIndirectCall(GlobalContext *GCtx) {
 		for (Function* callee : GCtx->Callees[IC]) {
 			info.callees.insert(callee->getName().str());
 		}
-		ICs[info.name] = info;
+		ICs.push_back(info);
 	}
 	
 	if (ICs.size() != GCtx->IndirectCallInsts.size()) {
 		OP << "Warning: the number of indirect call instructions and the number of indirect call info do not match.\n";
+		OP << "Indirect Call Instructions: " << GCtx->IndirectCallInsts.size() << "\n";
+		OP << "Indirect Call Info: " << ICs.size() << "\n";
 	}
 
 	// save the mapping as a JSON file
@@ -170,35 +214,6 @@ void getIndirectCall(GlobalContext *GCtx) {
 	writeICToJson(outFile, ICs);
 	OP << "Indirect Call Info saved as " << filename << "\n";
 }
-
-
-// void getIndirectCall(GlobalContext *GCtx) {
-// 	std::unordered_map<std::string, ICInfo> ICs;
-
-// 	for (auto &M : GCtx->Modules) {
-// 		Module *module = M.first;
-		
-// 		for (Function& func : *module) {
-// 			if (func.getBasicBlockList().size() == 0) {
-// 				continue;
-// 			}
-
-// 			for (BasicBlock& bb : func) {
-// 				for (Instruction& inst : bb) {
-// 					OP << "Instruction: " << inst << "\n";
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	// // save the mapping as a JSON file
-// 	// string filename = "ICInfo.json";
-// 	// std::ofstream outFile(filename);
-// 	// writeICToJson(outFile, ICs);
-// 	// OP << "Indirect Call Info saved as " << filename << "\n";
-
-// }
-
 
 std::unordered_map<std::string, BBInfo> BBMapping;
 
@@ -364,10 +379,10 @@ int main(int argc, char **argv) {
 	CallGraphPass CGPass(&GlobalCtx);
 	CGPass.run(GlobalCtx.Modules);
 
-	// // Print final results
-	// PrintResults(&GlobalCtx);
+	// Print final results
+	PrintResults(&GlobalCtx);
 
-	// getBBMapping(&GlobalCtx);
+	getBBMapping(&GlobalCtx);
 
 	getIndirectCall(&GlobalCtx);
 

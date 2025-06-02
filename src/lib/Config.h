@@ -29,7 +29,8 @@ extern int ENABLE_MLTA;
 #define MAP_DECLARATION_FUNCTION
 #define PRINT_ICALL_TARGET
 // Path to source code
-#define SOURCE_CODE_PATH "/home/rui/kernels/linux-6.7"
+// #define SOURCE_CODE_PATH "/home/rui/kernels/linux-6.7"
+#define SOURCE_CODE_PATH "/mnt/sdb/chuqi/kernels/linux-noftrace"
 //#define PRINT_SOURCE_LINE
 //#define MLTA_FIELD_INSENSITIVE
 

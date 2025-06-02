@@ -1,6 +1,6 @@
 # Configurations
 
-# KERNEL_SRC="$(pwd)/../../../kernels/linux-6.7"
+KERNEL_SRC="$(pwd)/../kernels/linux-noftrace"
 IRDUMPER="$(pwd)/IRDumper/build/lib/libDumper.so"
 CC="$(pwd)/llvm-project/prefix/bin/clang"
 LD="$(pwd)/llvm-project/prefix/bin/ld.lld"

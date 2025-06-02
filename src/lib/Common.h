@@ -64,7 +64,6 @@ using namespace std;
 #define KWHT  "\x1B[37m"  /* White */
 
 struct ICInfo {
-  std::string name;
   std::string BBName;
   std::string path;
   std::set<int> lines;
@@ -124,7 +123,7 @@ void LoadElementsStructNameMap(
 		vector<pair<Module*, StringRef>> &Modules);
 
 void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping);
-void writeICToJson(ostream& outFile, unordered_map<string, ICInfo> &mapping);
+void writeICToJson(ostream& outFile, vector<ICInfo> &mapping);
 
 string cleanPath(const string &path);
 //

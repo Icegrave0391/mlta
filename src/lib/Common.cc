@@ -30,7 +30,7 @@ string getFileName(DILocation *Loc, DISubprogram *SP) {
 
 	int slashToTrim = 2;
 	char *user = getlogin();
-	if (strstr(user, "rui")) {
+	if (strstr(user, "chuqi")) {
 		slashToTrim = 0;
 		trimPathSlash(FN, slashToTrim);
 		FN = string(SOURCE_CODE_PATH) + "/" + FN;
@@ -178,25 +178,25 @@ void printSourceCodeInfo(Value *V, string Tag) {
   if (!Loc)
     return;
 
-  unsigned LineNo = Loc->getLine();
-  std::string FN = getFileName(Loc);
-  string line = getSourceLine(FN, LineNo);
-  FN = Loc->getFilename().str();
-  //FN = FN.substr(FN.find('/') + 1);
-  //FN = FN.substr(FN.find('/') + 1);
+//   unsigned LineNo = Loc->getLine();
+//   std::string FN = getFileName(Loc);
+//   string line = getSourceLine(FN, LineNo);
+//   FN = Loc->getFilename().str();
+//   //FN = FN.substr(FN.find('/') + 1);
+//   //FN = FN.substr(FN.find('/') + 1);
 
-  while(line[0] == ' ' || line[0] == '\t')
-    line.erase(line.begin());
-  OP << " ["
-    << "\033[34m" << Tag << "\033[0m" << "] "
-    << FN
-    << " +" << LineNo
-#ifdef PRINT_SOURCE_LINE
-  << " "
-    << "\033[35m" << line << "\033[0m" <<'\n';
-  OP<<*I
-#endif
-    <<"\n";
+//   while(line[0] == ' ' || line[0] == '\t')
+//     line.erase(line.begin());
+//   OP << " ["
+//     << "\033[34m" << Tag << "\033[0m" << "] "
+//     << FN
+//     << " +" << LineNo
+// #ifdef PRINT_SOURCE_LINE
+//   << " "
+//     << "\033[35m" << line << "\033[0m" <<'\n';
+//   OP<<*I
+// #endif
+//     <<"\n";
 }
 
 
@@ -204,33 +204,33 @@ void printSourceCodeInfo(Function *F, string Tag) {
 
   DISubprogram *SP = F->getSubprogram();
 
-  if (SP) {
-    string FN = getFileName(NULL, SP);
-    string line = getSourceLine(FN, SP->getLine());
-    while(line[0] == ' ' || line[0] == '\t')
-      line.erase(line.begin());
+//   if (SP) {
+//     string FN = getFileName(NULL, SP);
+//     string line = getSourceLine(FN, SP->getLine());
+//     while(line[0] == ' ' || line[0] == '\t')
+//       line.erase(line.begin());
 
-    FN = SP->getFilename().str();
-    //FN = FN.substr(FN.find('/') + 1);
-    //FN = FN.substr(FN.find('/') + 1);
+//     FN = SP->getFilename().str();
+//     //FN = FN.substr(FN.find('/') + 1);
+//     //FN = FN.substr(FN.find('/') + 1);
 
-    OP << " ["
-      << "\033[34m" << Tag << "\033[0m" << "] "
-      << FN
-      << " +" << SP->getLine()
-#ifdef PRINT_SOURCE_LINE
-      << " "
-      << "\033[35m" << line << "\033[0m"
-#endif
-      <<'\n';
-  }
-#ifdef PRINT_SOURCE_LINE
-  else {
-    OP << " ["
-      << "\033[34m" << "??" << "\033[0m" << "] "
-      << F->getParent()->getName()<<": "<<F->getName()<<'\n';
-  }
-#endif
+//     OP << " ["
+//       << "\033[34m" << Tag << "\033[0m" << "] "
+//       << FN
+//       << " +" << SP->getLine()
+// #ifdef PRINT_SOURCE_LINE
+//       << " "
+//       << "\033[35m" << line << "\033[0m"
+// #endif
+//       <<'\n';
+//   }
+// #ifdef PRINT_SOURCE_LINE
+//   else {
+//     OP << " ["
+//       << "\033[34m" << "??" << "\033[0m" << "] "
+//       << F->getParent()->getName()<<": "<<F->getName()<<'\n';
+//   }
+// #endif
 }
 
 string getMacroInfo(Value *V) {
@@ -564,23 +564,23 @@ void writeMappingToJson(ostream& outFile, unordered_map<string, BBInfo> &mapping
 	outFile << "]\n";
 }
 
-void writeICToJson(ostream& outFile, unordered_map<string, ICInfo> &mapping) {
+void writeICToJson(ostream& outFile, vector<ICInfo> &mapping) {
 	outFile << "[\n";
 	for (auto it = mapping.begin(); it != mapping.end(); ++it) {
 		outFile << "{\n";
-		outFile << "\"name\": \"" << it->first << "\",\n";
-		outFile << "\"path\": \"" << it->second.path << "\",\n";
+		outFile << "\"BBName\": \"" << it->BBName << "\",\n";
+		outFile << "\"path\": \"" << it->path << "\",\n";
 		outFile << "\"lines\": [";
-		for (auto line = it->second.lines.begin(); line != it->second.lines.end(); ++line) {
+		for (auto line = it->lines.begin(); line != it->lines.end(); ++line) {
 			outFile << *line;
-			if (next(line) != it->second.lines.end())
+			if (next(line) != it->lines.end())
 				outFile << ", ";
 		}
 		outFile << "],\n";
 		outFile << "\"callees\": [";
-		for (auto succ = it->second.callees.begin(); succ != it->second.callees.end(); ++succ) {
+		for (auto succ = it->callees.begin(); succ != it->callees.end(); ++succ) {
 			outFile << "\"" << *succ << "\"";
-			if (next(succ) != it->second.callees.end())
+			if (next(succ) != it->callees.end())
 				outFile << ", ";
 		}
 		outFile << "]\n";
